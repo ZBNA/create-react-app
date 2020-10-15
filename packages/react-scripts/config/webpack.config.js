@@ -89,7 +89,7 @@ module.exports = function (webpackEnv) {
   const shouldUseReactRefresh = env.raw.FAST_REFRESH;
 
   // common function to get style loaders
-  const getStyleLoaders = (cssOptions, preProcessor) => {
+  const getStyleLoaders = (cssOptions, preProcessor, unresolvedPreProcessor) => {
     const loaders = [
       isEnvDevelopment && require.resolve('style-loader'),
       isEnvProduction && {
@@ -130,6 +130,11 @@ module.exports = function (webpackEnv) {
         },
       },
     ].filter(Boolean);
+    if (unresolvedPreProcessor) {
+      loaders.push({
+        loader: unresolvedPreProcessor,
+      });
+    }
     if (preProcessor) {
       loaders.push(
         {
@@ -554,7 +559,8 @@ module.exports = function (webpackEnv) {
                     ? shouldUseSourceMap
                     : isEnvDevelopment,
                 },
-                'sass-loader'
+                'sass-loader',
+                'azure-devops-ui/buildScripts/css-variables-loader'
               ),
               // Don't consider CSS imports dead code even if the
               // containing package claims to have no side effects.
@@ -578,6 +584,14 @@ module.exports = function (webpackEnv) {
                 },
                 'sass-loader'
               ),
+            },
+            {
+              test: /\.woff$/,
+              use: [
+                {
+                  loader: 'base64-inline-loader',
+                },
+              ],
             },
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.
